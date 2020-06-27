@@ -1,14 +1,26 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import LOGO from '../images/logo.svg'
 import isEmpty from "validator/lib/isEmpty"
 import {useHistory} from 'react-router-dom'
 import isEmail from "validator/lib/isEmail"
+import {showLoading} from '../utils/helpers'
+import axios from '../api/axios'
+import ENDPOINT from '../api/endpoint'
+import APP_CONSTANTS from '../constants/appConstants'
 
 function Login(props) {
     const history = useHistory()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [validationMsg, setValidationMsg] = useState({})
+    const [message, setMessage] = useState("")
+
+    useEffect(() => {
+        const token = localStorage.getItem(APP_CONSTANTS.USER_TOKEN)
+        if (token) {
+            history.replace('./admin')
+        }
+    })
 
     const onChangeEmail = (event) => {
         const value = event.target.value
@@ -37,12 +49,28 @@ function Login(props) {
         return true
     }
 
-    const onSubmitLogin  = () => {
+    const onSubmitLogin  = async () => {
         const isValid = validateAll()
         if (!isValid) return
 
-        // Call API LOGIN
-        history.replace('/admin')
+        try {
+            const params = {
+                username: email,
+                password: password
+            }
+    
+            const res = await axios.post(ENDPOINT.LOGIN, params)
+            if (res.data && res.data.messageCode === 1) {
+                localStorage.setItem(APP_CONSTANTS.USER_TOKEN, res.data.result.access_token)
+                setMessage("")
+                history.replace('/admin')
+            } else {
+                setMessage(res.data.message)
+            }
+            
+        } catch (error) {
+            console.log("api login error: ", error)
+        }
     }
 
     return (
@@ -101,8 +129,9 @@ function Login(props) {
 
                                 <a className="text-gray-600 hover:text-gray-700 no-underline block mt-3" href="/password/reset">
                                     Forgot Your Password?
-                        </a>
+                                </a>
                             </div>
+                            <div className="text-center text-sm text-red-500 mt-2">{message}</div>
                         </form>
                     </div>
                 </div>
