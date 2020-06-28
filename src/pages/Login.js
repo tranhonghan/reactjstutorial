@@ -3,7 +3,6 @@ import LOGO from '../images/logo.svg'
 import isEmpty from "validator/lib/isEmpty"
 import {useHistory} from 'react-router-dom'
 import isEmail from "validator/lib/isEmail"
-import {showLoading} from '../utils/helpers'
 import axios from '../api/axios'
 import ENDPOINT from '../api/endpoint'
 import APP_CONSTANTS from '../constants/appConstants'
